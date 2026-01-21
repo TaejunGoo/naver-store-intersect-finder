@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "WebFetch(domain:developers.naver.com)",
+      "Bash(npm run test:run:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run lint:*)",
+      "Bash(timeout:*)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}
