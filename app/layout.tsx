@@ -2,6 +2,9 @@
 import localFont from 'next/font/local';
 
 import './globals.css';
+import { SiGithub } from 'react-icons/si';
+
+import { Footer } from '@/components/footer';
 import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +49,7 @@ export default function RootLayout({
           enableSystem={true}
         >
           {children}
+          <Footer />
         </ThemeProvider>
       </body>
     </html>

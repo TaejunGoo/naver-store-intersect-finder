@@ -33,8 +33,8 @@ export function StoreCard({ store }: StoreCardProps) {
   };
 
   return (
-    <Card className='h-full'>
-      <CardHeader className='pb-3'>
+    <Card className='h-full gap-3'>
+      <CardHeader>
         <div className='flex items-start justify-between gap-2'>
           <CardTitle className='text-lg leading-tight'>
             <a
@@ -51,7 +51,6 @@ export function StoreCard({ store }: StoreCardProps) {
             {store.products.length}개 상품
           </Badge>
         </div>
-        <p className='text-sm text-muted-foreground'>스마트스토어</p>
       </CardHeader>
       <CardContent className='space-y-4'>
         {Object.entries(productsByKeyword).map(([keyword, products]) => (
