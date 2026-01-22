@@ -2,10 +2,7 @@
 
 import { useState, FormEvent, KeyboardEvent } from 'react';
 
-import { Search, X, Loader2, SearchIcon } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { X, Loader2, SearchIcon } from 'lucide-react';
 
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './ui/input-group';
 

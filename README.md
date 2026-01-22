@@ -16,7 +16,7 @@
 - **스마트 캐싱**: 5분 TTL 메모리 캐시로 중복 API 호출 방지
 - **속도 제한 방지**: 다단계 딜레이 시스템으로 429 에러 방지
 - **반응형 UI**: 모바일/태블릿/데스크톱 최적화
-- **다크모드 지원**: 시스템 테마 자동 감지
+- **다크모드 지원**: 시스템 테마 자동 감지 + 푸터에서 수동 전환
 - **로딩 애니메이션**: Shimmer 효과로 로딩 상태 명확히 표시
 
 ## 🚀 빠른 시작
@@ -112,6 +112,7 @@ export const SEARCH_CONFIG = {
 | Styling | Tailwind CSS | v4 |
 | Components | shadcn/ui | latest |
 | Data Fetching | SWR | 2.x |
+| Theme | next-themes | latest |
 | Icons | Lucide React | latest |
 | Font | Pretendard Variable | - |
 | Testing | Vitest + Testing Library | latest |
@@ -130,7 +131,11 @@ naver-store-intersect-finder/
 │   ├── ui/                       # shadcn/ui 컴포넌트
 │   ├── search-form.tsx           # 검색 폼
 │   ├── search-results.tsx        # 결과 표시
-│   └── store-card.tsx            # 스토어 카드
+│   ├── store-card.tsx            # 스토어 카드
+│   ├── theme-toggle.tsx          # 테마 토글 버튼
+│   ├── theme-provider.tsx        # 테마 프로바이더
+│   ├── footer.tsx                # 푸터
+│   └── floating.tsx              # 플로팅 버튼
 ├── hooks/
 │   └── use-store-search.ts       # SWR 검색 훅
 ├── lib/
@@ -259,7 +264,7 @@ A web application that finds Naver Smart Stores selling **all** of your searched
 - **Smart Caching**: 5-minute TTL memory cache to prevent duplicate API calls
 - **Rate Limit Prevention**: Multi-level delay system to avoid 429 errors
 - **Responsive UI**: Optimized for mobile/tablet/desktop
-- **Dark Mode**: Auto-detects system theme
+- **Dark Mode**: Auto-detects system theme + manual toggle in footer
 - **Loading Animation**: Shimmer effect for clear loading state
 
 ### Quick Start

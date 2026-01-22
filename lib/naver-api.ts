@@ -8,6 +8,14 @@ import { groupByStore, mergeStoreProducts } from './store-extractor';
 
 const NAVER_API_URL = 'https://openapi.naver.com/v1/search/shop.json';
 
+// Debug logging - only enabled in development
+const DEBUG = process.env.NODE_ENV === 'development';
+const debugLog = (...args: unknown[]) => {
+  if (DEBUG) {
+    console.log(...args);
+  }
+};
+
 // ============================================================================
 // SEARCH CONFIGURATION - Modify these values to adjust search behavior
 // ============================================================================
@@ -85,12 +93,12 @@ export async function searchNaverShoppingPage(
   const cached = naverApiCache.get(cacheKey) as NaverShoppingResponse | null;
 
   if (cached) {
-    console.log('[searchNaverShoppingPage] cache hit', { keyword, display, start, items: cached.items.length });
+    debugLog('[searchNaverShoppingPage] cache hit', { keyword, display, start, items: cached.items.length });
     return cached;
   }
 
   NAVER_API_CALL_COUNT++;
-  console.log(`[API CALL #${NAVER_API_CALL_COUNT}]`, { keyword, display, start, sort });
+  debugLog(`[API CALL #${NAVER_API_CALL_COUNT}]`, { keyword, display, start, sort });
 
   const params = new URLSearchParams({
     query: keyword,
@@ -113,7 +121,7 @@ export async function searchNaverShoppingPage(
   }
 
   const data: NaverShoppingResponse = await response.json();
-  console.log('[searchNaverShoppingPage] API response', { keyword, display, start, items: data.items.length });
+  debugLog('[searchNaverShoppingPage] API response', { keyword, display, start, items: data.items.length });
   naverApiCache.set(cacheKey, data);
 
   return data;
@@ -158,7 +166,7 @@ async function fetchPagesForKeywords(
   for (const { keyword, response } of results) {
     const existing = keywordItems.get(keyword) || [];
     keywordItems.set(keyword, [...existing, ...response.items]);
-    console.log('[fetchPagesForKeywords] keyword:', keyword, '누적 상품 수:', keywordItems.get(keyword)?.length ?? 0);
+    debugLog('[fetchPagesForKeywords] keyword:', keyword, '누적 상품 수:', keywordItems.get(keyword)?.length ?? 0);
   }
 
   return keywordItems;
@@ -186,7 +194,7 @@ function mergeIntoStoreMaps(
         existingMap.set(storeId, newStore);
       }
     }
-    console.log('[mergeIntoStoreMaps] keyword:', keyword, '스토어 수:', existingMap.size);
+    debugLog('[mergeIntoStoreMaps] keyword:', keyword, '스토어 수:', existingMap.size);
     return existingMap;
   });
 }
@@ -228,7 +236,7 @@ export async function searchKeywordsMultiSort(
 
   // Try each sort option progressively
   for (const sortOption of SORT_OPTIONS) {
-    console.log(`[searchKeywordsMultiSort] Starting sort=${sortOption}`);
+    debugLog(`[searchKeywordsMultiSort] Starting sort=${sortOption}`);
     let currentPage = 0;
 
     // Progressive search within this sort option
@@ -241,7 +249,7 @@ export async function searchKeywordsMultiSort(
 
       if (pagesToFetch.length === 0) break;
 
-      console.log(`[searchKeywordsMultiSort] sort=${sortOption}, fetching pages ${pagesToFetch.join(', ')}`);
+      debugLog(`[searchKeywordsMultiSort] sort=${sortOption}, fetching pages ${pagesToFetch.join(', ')}`);
 
       // Fetch pages for all keywords with this sort option
       const newItemsByKeyword = await fetchPagesForKeywords(
@@ -261,11 +269,11 @@ export async function searchKeywordsMultiSort(
 
       // Check intersection count after this batch
       const intersection = findIntersection(storesByKeyword);
-      console.log(`[searchKeywordsMultiSort] sort=${sortOption}, page ${currentPage}-${currentPage + pagesToFetch.length - 1}, 교집합: ${intersection.length}개`);
+      debugLog(`[searchKeywordsMultiSort] sort=${sortOption}, page ${currentPage}-${currentPage + pagesToFetch.length - 1}, 교집합: ${intersection.length}개`);
 
       // If we have enough intersection stores, stop immediately
       if (intersection.length >= minIntersection) {
-        console.log(`[searchKeywordsMultiSort] Found ${intersection.length} intersections (>= ${minIntersection}), stopping early`);
+        debugLog(`[searchKeywordsMultiSort] Found ${intersection.length} intersections (>= ${minIntersection}), stopping early`);
         return {
           storesByKeyword,
           totalApiCalls,
@@ -282,7 +290,7 @@ export async function searchKeywordsMultiSort(
       }
     }
 
-    console.log(`[searchKeywordsMultiSort] sort=${sortOption} completed, 교집합: ${findIntersection(storesByKeyword).length}개`);
+    debugLog(`[searchKeywordsMultiSort] sort=${sortOption} completed, 교집합: ${findIntersection(storesByKeyword).length}개`);
 
     // Add delay before trying next sort option to avoid rate limiting
     if (SORT_OPTIONS.indexOf(sortOption) < SORT_OPTIONS.length - 1) {
@@ -352,7 +360,7 @@ export async function searchKeywordsHybrid(
 
     // Check intersection count
     const intersection = findIntersection(storesByKeyword);
-    console.log('[searchKeywordsHybrid] 교집합 스토어 수:', intersection.length);
+    debugLog('[searchKeywordsHybrid] 교집합 스토어 수:', intersection.length);
 
     // If we have enough intersection stores, stop early
     if (intersection.length >= minIntersection) {

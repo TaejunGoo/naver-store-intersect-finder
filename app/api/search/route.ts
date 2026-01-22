@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { findIntersection, getAllStores } from '@/lib/intersection';
-import { searchKeywordsMultiSort, SEARCH_CONFIG } from '@/lib/naver-api';
+import { searchKeywordsMultiSort } from '@/lib/naver-api';
 import { SearchRequest, SearchResponse } from '@/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse<SearchResponse>> {

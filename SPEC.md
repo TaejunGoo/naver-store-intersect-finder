@@ -21,6 +21,7 @@ A Next.js web application that finds smart stores selling products across **mult
 | Styling | Tailwind CSS | v4 |
 | Components | shadcn/ui | latest |
 | Data Fetching | SWR | 2.x |
+| Theme | next-themes | latest |
 | Icons | Lucide React | latest |
 | Font | Pretendard Variable | - |
 | Testing | Vitest + Testing Library | latest |
@@ -46,7 +47,11 @@ naver-store-intersect-finder/
 │   │   └── alert.tsx
 │   ├── search-form.tsx           # Keyword input form
 │   ├── search-results.tsx        # Results container
-│   └── store-card.tsx            # Store display card
+│   ├── store-card.tsx            # Store display card
+│   ├── theme-toggle.tsx          # Theme toggle component (light/dark)
+│   ├── theme-provider.tsx        # Theme provider wrapper
+│   ├── footer.tsx                # Footer with theme toggle
+│   └── floating.tsx              # Floating action button
 ├── hooks/
 │   └── use-store-search.ts       # SWR-based search hook
 ├── lib/
@@ -628,6 +633,12 @@ class MemoryCache<T> {
 - Error: Red tones for errors
 - Success: Green tones for results
 
+### Theme Support
+- **System Detection**: Automatically follows OS theme preference
+- **Manual Toggle**: "light / dark" text toggle in footer
+- **Persistence**: Theme preference saved to localStorage
+- **Provider**: next-themes with system support enabled
+
 ### Loading States
 - Skeleton cards maintain layout
 - Button shows spinner when loading
@@ -941,6 +952,13 @@ Format: `naver:{keyword}:{display}:{start}:{sort}`
 | | | - Rate limiting prevention |
 | | | - Shimmer loading animation |
 | | | - 44 tests passing |
+| 1.1.0 | 2026-01-22 | Theme support and refinements |
+| | | - Theme toggle component in footer |
+| | | - System theme auto-detection + manual override |
+| | | - Debug logging (development only) |
+| | | - Accessibility improvements (keyboard navigation) |
+| | | - Code cleanup (unused imports, console.log) |
+| | | - 50 tests passing |
 
 ---
 
