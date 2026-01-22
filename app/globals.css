@@ -181,10 +181,3 @@
 .fade-in {
   animation: fade-in 0.3s ease-out;
 }
-
-/* Smooth scrolling */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-}

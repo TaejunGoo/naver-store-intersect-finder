@@ -19,7 +19,7 @@ export const Footer = () => {
             >
               Powered by NAVER Open API
             </a>
-            <a
+            {/* <a
               href='https://github.com/TaejunGoo'
               target='_blank'
               rel='noopener noreferrer'
@@ -27,7 +27,7 @@ export const Footer = () => {
             >
               <SiGithub className='h-3.5 w-3.5' />
               <span>TaejunGoo</span>
-            </a>
+            </a> */}
             <ThemeToggle />
           </div>
         </div>
