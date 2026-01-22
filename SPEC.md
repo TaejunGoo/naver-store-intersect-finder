@@ -386,74 +386,21 @@ The URL path is always `/main/products/...` - it does NOT contain the actual sto
     - totalStoresFound: number
 ```
 
-### Multi-Sort Progressive Search Strategy
-
-The app uses a multi-sort progressive search strategy to minimize API calls while maximizing results and reducing large store bias.
+### Search Strategy
 
 **Naver API limits:**
 - `display`: max 100 items per request
 - `start`: max 1000 (start + display <= 1100)
 - Daily limit: 25,000 calls
 
-**Multi-Sort Strategy:**
-
-Uses two sort methods to capture diverse store types:
-- **sim (similarity)**: High relevance, popular stores (may favor large stores)
-- **date (recent)**: Recently listed products (captures new/small specialty stores)
-
-**Progressive Search Flow:**
+**Search Flow:**
 ```
-For each sort option (sim, date):
-  1. Fetch 2 pages per keyword in batches
-  2. Check intersection count after each batch
-  3. If intersection >= 10 stores → STOP (early termination)
-  4. Otherwise, fetch next batch
-  5. Repeat until max 10 pages per sort option
-
-Rate limiting delays:
-  - 50ms between individual API calls
-  - 100ms between batches within same sort
-  - 500ms between different sort options
+1. Fetch products for each keyword (sim sort, 3 pages per keyword)
+2. Filter SmartStore products only
+3. Group products by store (mallName)
+4. Calculate intersection (stores appearing in ALL keyword results)
+5. Return results
 ```
-
-**Benefits:**
-
-| Scenario | API Calls | Description |
-|----------|-----------|-------------|
-| Early intersection (1 batch, sim) | 8 | Found 10+ stores in first 2 pages with sim sort (80% savings) |
-| Medium intersection (5 batches, sim) | 20 | Found 10+ stores after 5 batches with sim sort (50% savings) |
-| Late intersection (sim + 1 batch date) | 28 | Found 10+ stores in date sort (30% savings) |
-| No early termination | 40 | Searched all: 2 keywords × 2 sorts × 10 pages (0% savings) |
-
-*Baseline: 2 keywords × 2 sorts × 10 pages = 40 API calls*
-
-**Centralized Configuration (lib/naver-api.ts):**
-
-All search settings are managed in `SEARCH_CONFIG`:
-
-```typescript
-export const SEARCH_CONFIG = {
-  // API Request Settings
-  DISPLAY: 100,              // Max items per API request
-  MAX_START: 1000,           // Naver API limit
-  MAX_PAGES_PER_SORT: 10,    // Max pages per sort option
-
-  // Progressive Search Settings
-  PAGES_PER_BATCH: 2,        // Pages to fetch per batch
-  MIN_INTERSECTION_COUNT: 10, // Stop if this many intersection stores found
-
-  // Sort Options
-  SORT_OPTIONS: ['sim', 'date'] as const,
-  // Available: 'sim', 'date', 'asc', 'dsc'
-
-  // Rate Limiting (prevents 429 errors)
-  DELAY_BETWEEN_SORTS: 500,      // ms delay between sort options
-  DELAY_BETWEEN_BATCHES: 100,    // ms delay between batches
-  DELAY_BETWEEN_API_CALLS: 50,   // ms delay between API calls
-} as const;
-```
-
-To modify search behavior, update values in `SEARCH_CONFIG`.
 
 **API Response includes search stats:**
 ```json
@@ -462,8 +409,8 @@ To modify search behavior, update values in `SEARCH_CONFIG`.
   "data": {
     "intersectionStores": [...],
     "searchStats": {
-      "apiCalls": 8,
-      "pagesSearched": 4
+      "apiCalls": 6,
+      "pagesSearched": 6
     }
   }
 }
@@ -855,67 +802,25 @@ function Skeleton({ className, ...props }: React.ComponentProps<'div'>) {
 - Light mode: 50% opacity white
 - Dark mode: 10% opacity white
 
-### Rate Limiting Prevention
-
-Three-level delay system to avoid Naver API 429 errors:
-
-1. **Between API calls**: 50ms
-   - Prevents burst requests within a batch
-   - Applied between each individual API call
-
-2. **Between batches**: 100ms
-   - Gives API breathing room between batches
-   - Applied within same sort option
-
-3. **Between sorts**: 500ms
-   - Major pause between different sort options
-   - Ensures clean separation between sim and date searches
-
-**Implementation** (`lib/naver-api.ts`):
-```typescript
-// 1. Between API calls
-for (const keyword of keywords) {
-  for (const pageNum of pageNumbers) {
-    if (callCount > 0) {
-      await delay(SEARCH_CONFIG.DELAY_BETWEEN_API_CALLS); // 50ms
-    }
-    await searchNaverShoppingPage(...);
-  }
-}
-
-// 2. Between batches
-if (currentPage < maxPages) {
-  await delay(SEARCH_CONFIG.DELAY_BETWEEN_BATCHES); // 100ms
-}
-
-// 3. Between sorts
-if (SORT_OPTIONS.indexOf(sortOption) < SORT_OPTIONS.length - 1) {
-  await delay(SEARCH_CONFIG.DELAY_BETWEEN_SORTS); // 500ms
-}
-```
 
 ### Cache Key Structure
 
-Format: `naver:{keyword}:{display}:{start}:{sort}`
+Format: `naver:{keyword}:{display}:{start}:sim`
 
 **Examples**:
 ```typescript
-// sim sort, page 1
+// Page 1
 "naver:진간장 골드:100:1:sim"
 
-// sim sort, page 2
+// Page 2
 "naver:진간장 골드:100:101:sim"
-
-// date sort, page 1
-"naver:진간장 골드:100:1:date"
 
 // Different keyword
 "naver:콘소메:100:1:sim"
 ```
 
 **Benefits**:
-- Same keyword + same page + same sort = Cache hit
-- Different sort = Cache miss (intentional - different results)
+- Same keyword + same page = Cache hit
 - TTL: 5 minutes
 
 ---
@@ -924,20 +829,20 @@ Format: `naver:{keyword}:{display}:{start}:{sort}`
 
 ### Search Time Analysis
 
-**2 Keywords, Progressive Search**:
+**2 Keywords, 3 Pages Each**:
 
-| Scenario | Batches | API Calls | Delays | Total Time |
-|----------|---------|-----------|--------|------------|
-| Best case (1st batch) | 1 | 8 | ~200ms | 2-3s |
-| Average (3rd batch) | 3 | 12 | ~600ms | 5-8s |
-| Worst case (no early exit) | 10 | 40 | ~4.3s | 15-25s |
+| Component | Time |
+|-----------|------|
+| API calls (6 total) | ~3-4s |
+| Processing | ~0.5s |
+| Total | ~4-5s |
 
-*Includes: API response time (~500ms each) + delay time + processing*
+*API response time: ~500ms each*
 
 ### Cache Effectiveness
 
-**First Search**: Full API calls (e.g., 8-40 calls)
-**Repeated Search** (within 5 min): 0 API calls, ~0.1-0.5s response
+**First Search**: 6 API calls (~4-5s)
+**Repeated Search** (within 5 min): 0 API calls (~0.1-0.5s)
 
 ---
 
@@ -946,10 +851,9 @@ Format: `naver:{keyword}:{display}:{start}:{sort}`
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2026-01-21 | Initial release |
-| | | - Multi-sort progressive search (sim + date) |
-| | | - SEARCH_CONFIG centralized configuration |
+| | | - Smart store intersection search |
 | | | - Product keyword deduplication |
-| | | - Rate limiting prevention |
+| | | - Memory caching (5min TTL) |
 | | | - Shimmer loading animation |
 | | | - 44 tests passing |
 | 1.1.0 | 2026-01-22 | Theme support and refinements |
@@ -958,7 +862,12 @@ Format: `naver:{keyword}:{display}:{start}:{sort}`
 | | | - Debug logging (development only) |
 | | | - Accessibility improvements (keyboard navigation) |
 | | | - Code cleanup (unused imports, console.log) |
-| | | - 50 tests passing |
+| | | - 44 tests passing |
+| 1.2.0 | 2026-01-22 | Simplified search strategy |
+| | | - Changed to sim sort only (removed multi-sort) |
+| | | - Use first product link for store access |
+| | | - Improved store card design |
+| | | - Removed scale effects for cleaner UI |
 
 ---
 

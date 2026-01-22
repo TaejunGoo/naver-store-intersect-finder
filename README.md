@@ -10,14 +10,10 @@
 
 ## 🎯 주요 기능
 
-- **교집합 검색**: 여러 키워드를 모두 판매하는 스마트스토어만 표시
-- **다중 정렬 전략**: 유사도순(sim) + 최신순(date)으로 다양한 스토어 발견
-- **점진적 검색**: 충분한 결과 발견 시 조기 종료로 API 호출 최소화
-- **스마트 캐싱**: 5분 TTL 메모리 캐시로 중복 API 호출 방지
-- **속도 제한 방지**: 다단계 딜레이 시스템으로 429 에러 방지
-- **반응형 UI**: 모바일/태블릿/데스크톱 최적화
-- **다크모드 지원**: 시스템 테마 자동 감지 + 푸터에서 수동 전환
-- **로딩 애니메이션**: Shimmer 효과로 로딩 상태 명확히 표시
+- **교집합 검색**: 여러 키워드를 모두 판매하는 스마트스토어 찾기
+- **스마트 캐싱**: 5분 TTL 메모리 캐시로 빠른 재검색
+- **반응형 디자인**: 모바일/태블릿/데스크톱 최적화
+- **다크모드**: 시스템 테마 자동 감지 + 수동 전환
 
 ## 🚀 빠른 시작
 
@@ -60,47 +56,6 @@ npm run dev
 결과: 세 가지 상품을 모두 취급하는 운동용품 전문 스토어
 ```
 
-### 검색 전략
-
-1. **sim 정렬 (유사도순)**
-   - 키워드와 가장 관련성 높은 상품
-   - 인기 있는 대형 스토어 우선 노출
-
-2. **date 정렬 (최신순)**
-   - 최근 등록된 상품
-   - 신규 진입 소형 전문몰 발견
-
-3. **점진적 검색**
-   - 2페이지(200개 상품)씩 배치로 검색
-   - 교집합 10개 이상 발견 시 조기 종료
-   - 최대 10페이지(1,000개 상품)까지 검색
-
-## ⚙️ 설정 커스터마이징
-
-모든 검색 관련 설정은 `lib/naver-api.ts`의 `SEARCH_CONFIG`에서 관리합니다:
-
-```typescript
-export const SEARCH_CONFIG = {
-  // API Request Settings
-  DISPLAY: 100,              // API 요청당 상품 수
-  MAX_START: 1000,           // Naver API 제한
-  MAX_PAGES_PER_SORT: 10,    // 정렬당 최대 페이지 수
-
-  // Progressive Search Settings
-  PAGES_PER_BATCH: 2,        // 배치당 페이지 수
-  MIN_INTERSECTION_COUNT: 10, // 조기 종료 기준 (교집합 개수)
-
-  // Sort Options
-  SORT_OPTIONS: ['sim', 'date'], // 사용할 정렬 방법
-  // 'sim': 유사도순, 'date': 최신순
-  // 'asc': 낮은가격순, 'dsc': 높은가격순 추가 가능
-
-  // Rate Limiting (속도 제한 방지)
-  DELAY_BETWEEN_SORTS: 500,      // 정렬 옵션 사이 대기 (ms)
-  DELAY_BETWEEN_BATCHES: 100,    // 배치 사이 대기 (ms)
-  DELAY_BETWEEN_API_CALLS: 50,   // 개별 API 호출 사이 대기 (ms)
-}
-```
 
 ## 🏗️ 기술 스택
 
@@ -183,54 +138,6 @@ npm run lint
 npm run test
 ```
 
-## 📊 API 사용량 최적화
-
-### 캐싱 전략
-- **TTL**: 5분 (메모리 캐시)
-- **키 형식**: `naver:{keyword}:{display}:{start}:{sort}`
-- **효과**: 동일 검색 시 API 호출 0회
-
-### 점진적 검색
-
-| 시나리오 | API 호출 | 절감율 |
-|---------|---------|--------|
-| 첫 배치에서 교집합 10개 발견 | 8회 | 80% |
-| 5배치 후 교집합 10개 발견 | 20회 | 50% |
-| 최대 검색 (교집합 부족) | 40회 | 0% |
-
-*기준: 2 키워드 × 2 정렬 × 10 페이지 = 40회*
-
-## 🌟 주요 기능 상세
-
-### 1. 다중 정렬 전략
-
-대형몰 편향을 줄이기 위해 여러 정렬 방식을 사용합니다:
-
-- **sim (유사도순)**: 키워드와 관련성 높은 상품, 인기 스토어
-- **date (최신순)**: 최근 등록된 상품, 신규/소형 전문몰
-
-### 2. 중복 키워드 처리
-
-같은 상품이 여러 키워드에 매칭되는 경우:
-
-```typescript
-// 상품 "샘표 진간장 골드 500ml"
-// "진간장" 검색에도 나오고, "진간장 골드" 검색에도 나옴
-
-interface StoreProduct {
-  title: string
-  keywords: string[]  // ["진간장", "진간장 골드"]
-}
-```
-
-카드에서 두 키워드 섹션 모두에 표시됩니다.
-
-### 3. Shimmer 로딩 애니메이션
-
-Facebook, LinkedIn 스타일의 부드러운 shimmer 효과:
-- 배경: 회색 스켈레톤 구조 유지
-- 효과: 흰색 빛이 왼쪽→오른쪽으로 이동
-- 다크모드: 자동 대응
 
 ## 🔒 환경 변수
 
@@ -258,14 +165,10 @@ A web application that finds Naver Smart Stores selling **all** of your searched
 
 ### Features
 
-- **Intersection Search**: Shows only stores selling all keywords
-- **Multi-Sort Strategy**: Combines similarity (sim) + recent (date) sorting
-- **Progressive Search**: Early termination when sufficient results found
-- **Smart Caching**: 5-minute TTL memory cache to prevent duplicate API calls
-- **Rate Limit Prevention**: Multi-level delay system to avoid 429 errors
-- **Responsive UI**: Optimized for mobile/tablet/desktop
+- **Intersection Search**: Shows only stores selling all searched keywords
+- **Smart Caching**: 5-minute TTL memory cache for faster re-searches
+- **Responsive Design**: Optimized for mobile/tablet/desktop
 - **Dark Mode**: Auto-detects system theme + manual toggle in footer
-- **Loading Animation**: Shimmer effect for clear loading state
 
 ### Quick Start
 
@@ -294,21 +197,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 - **Data Fetching**: SWR
 - **Testing**: Vitest + Testing Library
 
-### Configuration
-
-All search settings are centralized in `SEARCH_CONFIG` at `lib/naver-api.ts`:
-
-```typescript
-export const SEARCH_CONFIG = {
-  MAX_PAGES_PER_SORT: 10,    // Max pages per sort option
-  PAGES_PER_BATCH: 2,        // Pages per batch
-  MIN_INTERSECTION_COUNT: 10, // Early termination threshold
-  SORT_OPTIONS: ['sim', 'date'], // Active sort methods
-  DELAY_BETWEEN_SORTS: 500,  // ms delay between sorts
-  DELAY_BETWEEN_BATCHES: 100, // ms delay between batches
-  DELAY_BETWEEN_API_CALLS: 50, // ms delay between API calls
-}
-```
 
 ### Testing
 

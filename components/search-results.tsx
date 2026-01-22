@@ -61,15 +61,39 @@ function EmptyState({ keywordCount }: { keywordCount: number }) {
 
 function IdleState() {
   return (
-    <div className='text-center py-12'>
-      <Store className='h-12 w-12 mx-auto text-muted-foreground mb-4' />
-      <h3 className='text-lg font-medium mb-2'>스마트스토어 교집합 찾기</h3>
-      <p className='text-muted-foreground'>
-        여러 검색어를 입력하면, 해당 상품들을 모두 판매하는
-        <br />
-        스마트스토어를 찾아드립니다.
-      </p>
-      <p className='text-sm text-muted-foreground mt-2'>*전체 검색결과가 아닌 상위 일부 결과만 표시됩니다.</p>
+    <div className='text-center py-16 px-4'>
+      <div className='max-w-2xl mx-auto'>
+        <div className='mb-6'>
+          <Store className='h-16 w-16 mx-auto text-green-500' />
+        </div>
+        <h3 className='text-2xl font-semibold mb-4'>스마트스토어 교집합 찾기</h3>
+        <p className='text-base text-muted-foreground mb-6 leading-relaxed'>
+          여러 검색어를 입력하면, 해당 상품들을 <strong>모두 판매하는</strong>
+          <br className='hidden sm:block' />
+          네이버 스마트스토어를 찾아드립니다.
+        </p>
+
+        <div className='bg-muted/50 rounded-lg p-4 space-y-2 text-sm'>
+          <div className='flex items-start gap-2 text-left'>
+            <span className='text-primary font-medium shrink-0'>📝</span>
+            <p className='text-muted-foreground'>
+              검색어를 <strong>쉼표(,)</strong>로 구분하여 입력해주세요
+            </p>
+          </div>
+          <div className='flex items-start gap-2 text-left'>
+            <span className='text-primary font-medium shrink-0'>🔢</span>
+            <p className='text-muted-foreground'>
+              최소 <strong>2개</strong>, 최대 <strong>5개</strong>까지 검색 가능합니다
+            </p>
+          </div>
+          <div className='flex items-start gap-2 text-left'>
+            <span className='text-primary font-medium shrink-0'>💡</span>
+            <p className='text-muted-foreground'>
+              예시: <span className='font-mono text-xs bg-background px-1.5 py-0.5 rounded'>유청 단백질, 쉐이커, BCAA</span>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

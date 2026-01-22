@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Documentation Language**: All code documentation, comments, commit messages, and written artifacts should be in English.
 - **Conversation Language**: All conversations with the user should be conducted in Korean (한글).
+- **Documentation Update Policy**: After making code changes, always ask the user if they want to update the related documentation (README.md, SPEC.md, CLAUDE.md). Never update documentation automatically without asking first.
 
 ## Project Overview
 

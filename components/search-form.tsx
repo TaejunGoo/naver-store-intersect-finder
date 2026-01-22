@@ -29,6 +29,9 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
     if (keywords.length < 2) {
       return '최소 2개 이상의 검색어를 입력해주세요 (쉼표로 구분)';
     }
+    if (keywords.length > 5) {
+      return '최대 5개까지 검색 가능합니다';
+    }
     return null;
   };
 
