@@ -96,7 +96,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
           )}
           <span className='hidden md:ml-2 md:inline'>검색</span>
         </Button> */}
-        <InputGroup>
+        <InputGroup className='overflow-hidden'>
           <InputGroupInput 
             id='inline-start-input'
             placeholder='검색어를 쉼표로 구분하여 입력 (예: 단백질 보충제, 쉐이커)'
@@ -107,18 +107,32 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
             }}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
+            
           />
+          {input && (
+            <InputGroupAddon align='inline-end'>
+              <InputGroupButton
+                type='button'
+                onClick={handleClear}
+                className='text-muted-foreground hover:text-foreground cursor-pointer'
+                disabled={isLoading}
+              >
+                <X className='h-4 w-4' />
+              </InputGroupButton>
+            </InputGroupAddon>
+          )}
           <InputGroupAddon align='inline-end'>
             <InputGroupButton 
               variant='ghost'
               type='submit'
               disabled={isLoading}
+              className='cursor-pointer'
             >
               
               {isLoading ? (
                 <Loader2 className='h-4 w-4 animate-spin text-foreground' />
               ) : (
-                <SearchIcon className='text-foreground cursor-pointer' />
+                <SearchIcon className='h-4 w-4 text-foreground cursor-pointer' />
               )}
             </InputGroupButton>
           </InputGroupAddon>

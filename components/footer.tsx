@@ -1,15 +1,36 @@
+'use client';
+
 import { SiGithub } from 'react-icons/si';
+
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export const Footer = () => {
   return (
-    <footer className='w-full border-t border-muted mt-12 py-6 text-center text-xs text-muted-foreground bg-background/80'>
-      <a href='http://developers.naver.com' target='_blank' rel='noopener noreferrer'>Powered by NAVER Open API</a>
-      <div className='mt-1'>
-        <span>&copy; {new Date().getFullYear()} 스마트스토어 교집합 찾기</span>
-        <span className='mx-2'>·</span>
-        <a href='https://github.com/TaejunGoo' target='_blank' rel='noopener noreferrer' className='underline hover:text-primary'>
-          <SiGithub className='inline h-4 w-4 mb-0.5 mr-1' />
-          Github</a>
+    <footer className='w-full py-8 bg-foreground/3 dark:bg-background/80 backdrop-blur-sm'>
+      <div className='container mx-auto px-4 max-w-6xl'>
+        <div className='flex flex-col items-center gap-4'>
+          {/* Main content */}
+          <div className='flex flex-col sm:flex-row items-center gap-2 text-xs text-muted-foreground'>
+            <a
+              href='http://developers.naver.com'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='hover:text-primary transition-colors'
+            >
+              Powered by NAVER Open API
+            </a>
+            <a
+              href='https://github.com/TaejunGoo'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='hover:text-primary transition-colors flex items-center gap-1.5'
+            >
+              <SiGithub className='h-3.5 w-3.5' />
+              <span>TaejunGoo</span>
+            </a>
+            <ThemeToggle />
+          </div>
+        </div>
       </div>
     </footer>
   );

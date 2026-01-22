@@ -1,9 +1,8 @@
-
 import localFont from 'next/font/local';
 
 import './globals.css';
-import { SiGithub } from 'react-icons/si';
 
+import { Floating } from '@/components/floating';
 import { Footer } from '@/components/footer';
 import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
@@ -49,6 +48,7 @@ export default function RootLayout({
           enableSystem={true}
         >
           {children}
+          <Floating />
           <Footer />
         </ThemeProvider>
       </body>

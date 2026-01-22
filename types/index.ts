@@ -28,6 +28,7 @@ export interface NaverShoppingResponse {
 export interface SmartStore {
   storeId: string
   storeName: string
+  storeUrl: string // Actual store URL extracted from product links
   products: StoreProduct[]
 }
 

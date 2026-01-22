@@ -24,6 +24,49 @@ export function generateStoreId(mallName: string): string {
 }
 
 /**
+ * Extract store URL from product link
+ *
+ * Product link examples:
+ * - https://smartstore.naver.com/latasangjeom/products/123456 (actual store ID)
+ * - https://smartstore.naver.com/main/products/123456 (placeholder, not a real store)
+ * - https://brand.naver.com/somebrand/products/123456
+ *
+ * Store URL result:
+ * - https://smartstore.naver.com/latasangjeom
+ * - null (for 'main' placeholder)
+ * - https://brand.naver.com/somebrand
+ *
+ * Note: Naver API often returns URLs with 'main' as a placeholder.
+ * In those cases, we return null and fall back to search URL.
+ */
+export function extractStoreUrl(productLink: string): string | null {
+  try {
+    const url = new URL(productLink);
+
+    // Check if it's a smartstore or brand store
+    if (url.hostname === 'smartstore.naver.com' || url.hostname === 'brand.naver.com') {
+      const pathParts = url.pathname.split('/').filter(Boolean);
+
+      // Path should be: [storeId, 'products', productId]
+      if (pathParts.length >= 2 && pathParts[0]) {
+        const storeId = pathParts[0];
+
+        // Skip 'main' as it's a placeholder, not a real store ID
+        if (storeId === 'main') {
+          return null;
+        }
+
+        return `${url.protocol}//${url.hostname}/${storeId}`;
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Check if a product is from a Smart Store (based on URL pattern only)
  * Only includes products from smartstore.naver.com or brand.naver.com
  * Excludes other marketplaces like Coupang, 11st, etc.
@@ -87,9 +130,13 @@ export function groupByStore(
         existing.products.push(product);
       }
     } else {
+      // Extract store URL from product link
+      const storeUrl = extractStoreUrl(item.link) || '';
+
       stores.set(storeId, {
         storeId,
         storeName: item.mallName,
+        storeUrl,
         products: [product],
       });
     }
@@ -133,6 +180,8 @@ export function mergeStoreProducts(
 
   return {
     ...existing,
+    // Use newStore's storeUrl if existing one is empty
+    storeUrl: existing.storeUrl || newStore.storeUrl,
     products: Array.from(productMap.values()),
   };
 }

@@ -112,17 +112,26 @@ export function SearchResults({
   }
 
   return (
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <p className='text-sm text-muted-foreground'>
-          총 <span className='font-medium text-foreground'>{totalStoresFound}</span>개 스토어 중{' '}
-          <span className='font-medium text-foreground'>{stores.length}</span>개 스토어가{' '}
-          <span className='font-medium text-foreground'>{keywordCount}</span>개 검색어를 모두 판매합니다
+    <div className='space-y-6 animate-in fade-in'>
+      <div className='flex items-center justify-between px-1'>
+        <p className='text-sm md:text-base text-muted-foreground'>
+          총 <span className='font-semibold text-foreground'>{totalStoresFound}</span>개 스토어 중{' '}
+          <span className='font-semibold text-primary'>{stores.length}</span>개가{' '}
+          <span className='font-semibold text-foreground'>{keywordCount}</span>개 검색어를 모두 판매합니다
         </p>
       </div>
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-        {stores.map((store) => (
-          <StoreCard key={store.storeId} store={store} />
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5'>
+        {stores.map((store, index) => (
+          <div
+            key={store.storeId}
+            className='animate-in fade-in'
+            style={{
+              animationDelay: `${index * 50}ms`,
+              animationFillMode: 'backwards',
+            }}
+          >
+            <StoreCard store={store} />
+          </div>
         ))}
       </div>
     </div>
