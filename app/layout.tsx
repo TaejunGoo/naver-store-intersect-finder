@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 
 import type { Metadata } from 'next';
 
+import { Analytics } from '@vercel/analytics/next';
+
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',
   display: 'swap',
@@ -50,6 +52,7 @@ export default function RootLayout({
           {children}
           <Floating />
           <Footer />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
