@@ -10,7 +10,7 @@ export const Footer = () => {
       <div className='container mx-auto px-4 max-w-6xl'>
         <div className='flex flex-col items-center gap-4'>
           {/* Main content */}
-          <div className='flex flex-col sm:flex-row items-center gap-2 text-xs text-muted-foreground'>
+          <div className='flex flex-col items-center gap-2 text-xs text-muted-foreground'>
             <a
               href='http://developers.naver.com'
               target='_blank'
@@ -23,7 +23,7 @@ export const Footer = () => {
               href='https://github.com/TaejunGoo'
               target='_blank'
               rel='noopener noreferrer'
-              className='hover:text-primary transition-colors flex items-center gap-1.5'
+              className='hover:text-primary transition-colors flex items-center gap-0.5'
             >
               <SiGithub className='h-3.5 w-3.5' />
               <span>TaejunGoo</span>

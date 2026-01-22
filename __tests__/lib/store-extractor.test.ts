@@ -6,7 +6,6 @@ import {
   isSmartStoreProduct,
   toStoreProduct,
   groupByStore,
-  extractStoreUrl,
 } from '@/lib/store-extractor';
 import { NaverShoppingItem } from '@/types';
 
@@ -212,10 +211,6 @@ describe('groupByStore', () => {
     expect(result.size).toBe(2);
     expect(result.get('헬시오')?.products.length).toBe(2);
     expect(result.get('프로틴마켓')?.products.length).toBe(1);
-
-    // Check storeUrl is extracted correctly (will be URL-encoded)
-    expect(result.get('헬시오')?.storeUrl).toBe('https://smartstore.naver.com/%ED%97%AC%EC%8B%9C%EC%98%A4');
-    expect(result.get('프로틴마켓')?.storeUrl).toBe('https://smartstore.naver.com/%ED%94%84%EB%A1%9C%ED%8B%B4%EB%A7%88%EC%BC%93');
   });
 
   it('should skip items with mallName "네이버"', () => {
@@ -274,36 +269,5 @@ describe('groupByStore', () => {
     const result = groupByStore(items, 'keyword');
 
     expect(result.get('프로틴마켓')?.storeName).toBe('프로틴마켓');
-  });
-});
-
-describe('extractStoreUrl', () => {
-  it('should extract store URL from smartstore.naver.com product link with real store ID', () => {
-    const productLink = 'https://smartstore.naver.com/latasangjeom/products/123456';
-    expect(extractStoreUrl(productLink)).toBe('https://smartstore.naver.com/latasangjeom');
-  });
-
-  it('should extract store URL from brand.naver.com product link', () => {
-    const productLink = 'https://brand.naver.com/somebrand/products/789';
-    expect(extractStoreUrl(productLink)).toBe('https://brand.naver.com/somebrand');
-  });
-
-  it('should return null for "main" placeholder (common in Naver API responses)', () => {
-    const productLink = 'https://smartstore.naver.com/main/products/123456';
-    expect(extractStoreUrl(productLink)).toBeNull();
-  });
-
-  it('should return null for non-smartstore URLs', () => {
-    const productLink = 'https://coupang.com/products/123';
-    expect(extractStoreUrl(productLink)).toBeNull();
-  });
-
-  it('should return null for invalid URLs', () => {
-    expect(extractStoreUrl('not-a-url')).toBeNull();
-  });
-
-  it('should return null for smartstore URLs without store ID', () => {
-    const productLink = 'https://smartstore.naver.com/';
-    expect(extractStoreUrl(productLink)).toBeNull();
   });
 });
