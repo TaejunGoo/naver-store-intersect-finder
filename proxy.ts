@@ -205,11 +205,11 @@ export default async function proxy(request: NextRequest) {
   // Add rate limit headers
   response.headers.set('X-RateLimit-Limit', String(RATE_LIMIT_CONFIG.MAX_REQUESTS));
   response.headers.set('X-RateLimit-Remaining', String(remaining));
-  response.headers.set('X-RateLimit-Reset', String(Math.ceil(resetTime / 1000)));
+  response.headers.set('X-RateLimit-Reset', String(resetTime)); // resetTime is already in seconds
 
   // Add Retry-After header if rate limited
   if (!allowed) {
-    const retryAfter = Math.ceil((resetTime - Date.now()) / 1000);
+    const retryAfter = Math.ceil((resetTime * 1000 - Date.now()) / 1000);
     response.headers.set('Retry-After', String(Math.max(retryAfter, 1)));
   }
 
