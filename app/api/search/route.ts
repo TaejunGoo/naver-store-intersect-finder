@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { findIntersection, getAllStores } from '@/lib/intersection';
 import { searchKeywordsMultiSort } from '@/lib/naver-api';
+import { validateKeywords } from '@/lib/validation';
 import { SearchRequest, SearchResponse } from '@/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse<SearchResponse>> {
@@ -10,32 +11,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<SearchRes
     const body: SearchRequest = await request.json();
     const { keywords } = body;
 
-    // Validate keywords
-    if (!keywords || !Array.isArray(keywords)) {
+    // Validate and normalize keywords (server-side validation)
+    const validationResult = validateKeywords(keywords);
+
+    if (!validationResult.valid) {
       return NextResponse.json(
-        { success: false, error: 'Keywords are required' },
+        { success: false, error: validationResult.error || 'Invalid keywords' },
         { status: 400 },
       );
     }
 
-    if (keywords.length < 2) {
-      return NextResponse.json(
-        { success: false, error: 'At least 2 keywords are required' },
-        { status: 400 },
-      );
-    }
-
-    // Trim and filter empty keywords
-    const cleanedKeywords = keywords
-      .map((k) => k.trim())
-      .filter((k) => k.length > 0);
-
-    if (cleanedKeywords.length < 2) {
-      return NextResponse.json(
-        { success: false, error: 'At least 2 non-empty keywords are required' },
-        { status: 400 },
-      );
-    }
+    // Use validated keywords
+    const cleanedKeywords = validationResult.keywords!;
 
     // Check for API credentials
     const clientId = process.env.NAVER_CLIENT_ID;

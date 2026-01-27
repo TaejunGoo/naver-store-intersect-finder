@@ -23,7 +23,6 @@ export function generateStoreId(mallName: string): string {
   return mallName.trim().toLowerCase();
 }
 
-
 /**
  * Check if a product is from a Smart Store (based on URL pattern only)
  * Only includes products from smartstore.naver.com or brand.naver.com

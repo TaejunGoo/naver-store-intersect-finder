@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 
+import { RateLimitIndicator } from '@/components/rate-limit-indicator';
 import { SearchForm } from '@/components/search-form';
 import { SearchResults } from '@/components/search-results';
 import { useStoreSearch } from '@/hooks/use-store-search';
 
 export default function Home() {
-  const { search, data, error, isLoading } = useStoreSearch();
+  const { search, data, error, isLoading, rateLimitInfo } = useStoreSearch();
   const [lastKeywords, setLastKeywords] = useState<string[]>([]);
 
   const handleSearch = async (keywords: string[]) => {
@@ -35,6 +36,7 @@ export default function Home() {
 
         <section className='mb-12 max-w-3xl mx-auto'>
           <SearchForm onSearch={handleSearch} isLoading={isLoading} />
+          <RateLimitIndicator rateLimitInfo={rateLimitInfo} />
         </section>
 
         <section className='animate-in fade-in duration-500'>

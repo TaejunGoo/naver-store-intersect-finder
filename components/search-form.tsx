@@ -4,6 +4,8 @@ import { useState, FormEvent, KeyboardEvent } from 'react';
 
 import { X, Loader2, SearchIcon } from 'lucide-react';
 
+import { validateKeywords } from '@/lib/validation';
+
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './ui/input-group';
 
 interface SearchFormProps {
@@ -22,32 +24,22 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
       .filter((k) => k.length > 0);
   };
 
-  const validate = (keywords: string[]): string | null => {
-    if (keywords.length === 0) {
-      return '검색어를 입력해주세요';
-    }
-    if (keywords.length < 2) {
-      return '최소 2개 이상의 검색어를 입력해주세요 (쉼표로 구분)';
-    }
-    if (keywords.length > 5) {
-      return '최대 5개까지 검색 가능합니다';
-    }
-    return null;
-  };
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
     const keywords = parseKeywords(input);
-    const validationError = validate(keywords);
 
-    if (validationError) {
-      setError(validationError);
+    // Validate keywords using centralized validation
+    const result = validateKeywords(keywords);
+
+    if (!result.valid) {
+      setError(result.error || '입력이 올바르지 않습니다');
       return;
     }
 
     setError(null);
-    onSearch(keywords);
+    // Use validated & normalized keywords
+    onSearch(result.keywords!);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {

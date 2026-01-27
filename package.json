@@ -8,10 +8,16 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:rate-limit": "node scripts/test-rate-limit.js",
+    "test:rate-limit:prod": "node scripts/test-rate-limit.js https://your-app.vercel.app 15",
+    "check:security": "node scripts/check-security-headers.js",
+    "check:security:prod": "node scripts/check-security-headers.js https://your-app.vercel.app"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.36.1",
     "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

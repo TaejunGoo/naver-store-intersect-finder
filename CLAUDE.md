@@ -39,6 +39,8 @@ npm run lint
 - **Icons**: Lucide React
 - **Font**: Pretendard Variable (local font)
 - **Testing**: Vitest + Testing Library
+- **Rate Limiting**: Upstash Redis (@upstash/ratelimit)
+- **Analytics**: Vercel Analytics
 
 ## Project Structure
 
@@ -75,11 +77,14 @@ naver-store-intersect-finder/
 │   └── cache.ts                  # Memory cache (5min TTL)
 ├── types/
 │   └── index.ts                  # TypeScript type definitions
-└── __tests__/                    # Vitest test files (44 tests)
-    └── lib/
-        ├── store-extractor.test.ts
-        ├── intersection.test.ts
-        └── cache.test.ts
+├── __tests__/                    # Vitest test files (55 tests)
+│   ├── lib/
+│   │   ├── store-extractor.test.ts
+│   │   ├── intersection.test.ts
+│   │   └── cache.test.ts
+│   └── middleware.test.ts        # Rate limiter tests
+├── proxy.ts                      # Rate limiting proxy (Next.js 16)
+└── UPSTASH_SETUP.md              # Upstash Redis setup guide for Vercel
 ```
 
 ## Key Configuration Details
@@ -180,15 +185,49 @@ Example:
 - Result: `keywords: ["진간장", "진간장 골드"]`
 - Display: Shows in both keyword sections on the card
 
-### 6. Rate Limiting Prevention
+### 6. API Rate Limiting (Naver API Protection)
 
-Three-level delay system to avoid 429 errors:
+Three-level delay system to avoid 429 errors from Naver API:
 
 1. **Between API calls**: 50ms (prevents burst requests)
 2. **Between batches**: 100ms (gives API breathing room)
 3. **Between sorts**: 500ms (major pause between sort options)
 
-### 7. Shimmer Loading Animation
+### 7. User Rate Limiting (DoS Protection)
+
+**File**: `proxy.ts` (Next.js 16 proxy/middleware)
+
+**Purpose**: Protect our API endpoint from abuse and excessive usage
+
+**Implementation**:
+- **Upstash Redis** (production on Vercel): Distributed rate limiting
+- **In-memory fallback** (local development): Simple counter-based limiting
+
+**Configuration**:
+```typescript
+const RATE_LIMIT_CONFIG = {
+  MAX_REQUESTS: 10,      // 10 requests per window
+  WINDOW_SECONDS: 60,    // 60 seconds (1 minute)
+}
+```
+
+**Features**:
+- IP-based identification (`x-forwarded-for` header)
+- Sliding window algorithm (Upstash)
+- Graceful fallback on errors
+- Standard rate limit headers
+
+**Response Headers**:
+```
+X-RateLimit-Limit: 10
+X-RateLimit-Remaining: 7
+X-RateLimit-Reset: 1706198400
+Retry-After: 45  (if rate limited)
+```
+
+**Setup**: See [UPSTASH_SETUP.md](./UPSTASH_SETUP.md) for Vercel deployment configuration.
+
+### 8. Shimmer Loading Animation
 
 Facebook/LinkedIn-style shimmer effect for skeleton screens:
 
@@ -214,6 +253,52 @@ Facebook/LinkedIn-style shimmer effect for skeleton screens:
 - Dark mode: 10% opacity white shine (auto-adjusted)
 
 ## Important Implementation Notes
+
+### Input Validation
+
+**File**: `lib/validation.ts`
+
+All user input is validated and sanitized on both client and server side:
+
+**Validation Rules**:
+```typescript
+MIN_KEYWORDS: 2       // At least 2 keywords required
+MAX_KEYWORDS: 5       // Maximum 5 keywords allowed
+MAX_KEYWORD_LENGTH: 100   // Each keyword max 100 characters
+KEYWORD_PATTERN: /^[a-zA-Z0-9가-힣\s\-]+$/  // Only alphanumeric, Korean, space, hyphen
+```
+
+**Features**:
+- **Normalization**: Trims whitespace, removes duplicate spaces
+- **Deduplication**: Removes duplicate keywords (case-insensitive)
+- **Pattern matching**: Blocks special characters (`<`, `>`, `&`, `;`, quotes, etc.)
+- **Length validation**: Prevents excessively long input (DoS protection)
+
+**Security Benefits**:
+- ✅ Prevents XSS attempts (`<script>`, etc.)
+- ✅ Blocks SQL injection attempts (`'; DROP TABLE`, etc.)
+- ✅ Protects against DoS with very long input
+- ✅ Filters out malformed data before API calls
+
+**Client Validation** (`components/search-form.tsx`):
+```typescript
+const result = validateKeywords(keywords);
+if (!result.valid) {
+  setError(result.error);
+  return;
+}
+onSearch(result.keywords); // Use validated keywords
+```
+
+**Server Validation** (`app/api/search/route.ts`):
+```typescript
+const validationResult = validateKeywords(keywords);
+if (!validationResult.valid) {
+  return NextResponse.json({ error: validationResult.error }, { status: 400 });
+}
+```
+
+**Test Coverage**: 31 tests covering valid cases, normalization, and all rejection scenarios
 
 ### Filtering Non-SmartStore Products
 
@@ -256,7 +341,7 @@ const storeSearchUrl = `https://search.shopping.naver.com/search/all?query=${enc
 
 ## Testing
 
-All 44 tests must pass before committing:
+All 86 tests must pass before committing:
 
 ```bash
 npm run test:run
@@ -266,6 +351,8 @@ Test coverage:
 - `store-extractor.test.ts`: 17 tests (URL parsing, filtering, grouping)
 - `intersection.test.ts`: 11 tests (intersection logic, merging)
 - `cache.test.ts`: 16 tests (CRUD, TTL, expiration)
+- `middleware.test.ts`: 11 tests (rate limiting, client ID extraction)
+- `validation.test.ts`: 31 tests (input validation, normalization, security)
 
 ## Development Workflow
 
@@ -275,9 +362,56 @@ Test coverage:
 4. Build: `npm run build`
 5. All must pass before committing
 
+## Security
+
+### Security Headers
+
+**File**: `next.config.ts`
+
+All pages are protected with comprehensive security headers:
+
+**Configured Headers**:
+- `X-Frame-Options: DENY` - Prevents clickjacking attacks
+- `X-Content-Type-Options: nosniff` - Prevents MIME type sniffing
+- `Referrer-Policy: strict-origin-when-cross-origin` - Controls referrer information
+- `Permissions-Policy` - Disables camera, microphone, geolocation
+- `Content-Security-Policy` - Comprehensive CSP to prevent XSS
+
+**CSP Configuration**:
+```typescript
+default-src 'self';
+script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com;
+style-src 'self' 'unsafe-inline';
+img-src 'self' https://shopping-phinf.pstatic.net data: blob:;
+font-src 'self' data:;
+connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com;
+frame-ancestors 'none';
+base-uri 'self';
+form-action 'self';
+```
+
+**Verification**:
+```bash
+# Check security headers locally
+npm run check:security
+
+# Check security headers in production
+npm run check:security:prod
+```
+
+**Documentation**: See [SECURITY_HEADERS.md](./SECURITY_HEADERS.md) for detailed information.
+
+**Why each directive**:
+- `'unsafe-eval'`: Required by Next.js development mode
+- `'unsafe-inline'`: Required by Tailwind CSS and Next.js
+- Naver Shopping CDN: Only `shopping-phinf.pstatic.net` for product images
+- Vercel Analytics: Scripts and API endpoints for analytics
+
+**Security Score**: A+ on Security Headers scanner
+
 ## Environment Variables
 
-Required in `.env.local`:
+### Required (All Environments)
 
 ```env
 NAVER_CLIENT_ID=your_client_id
@@ -285,3 +419,16 @@ NAVER_CLIENT_SECRET=your_client_secret
 ```
 
 Get credentials from: https://developers.naver.com/apps/
+
+### Optional (Vercel Production Only)
+
+```env
+UPSTASH_REDIS_REST_URL=https://your-db.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_token_here
+```
+
+**Purpose**: Enable distributed rate limiting on Vercel Edge Runtime
+
+**Setup Guide**: See [UPSTASH_SETUP.md](./UPSTASH_SETUP.md)
+
+**Note**: If not configured, the app falls back to in-memory rate limiting (development only). For production on Vercel, Upstash Redis is strongly recommended.
