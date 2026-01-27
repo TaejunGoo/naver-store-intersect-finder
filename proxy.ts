@@ -40,7 +40,7 @@ if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) 
       RATE_LIMIT_CONFIG.MAX_REQUESTS,
       `${RATE_LIMIT_CONFIG.WINDOW_SECONDS} s`,
     ),
-    analytics: true, // Enable analytics in Upstash dashboard
+    analytics: false, // Disable analytics to avoid consuming rate limit
     prefix: 'naver-store-finder', // Prefix for Redis keys
   });
 }
@@ -152,6 +152,16 @@ async function checkRateLimit(clientId: string): Promise<{
     try {
       const { success, remaining, reset } = await ratelimit.limit(clientId);
 
+      // Debug logging to understand Upstash behavior
+      console.log('[Rate Limiter] Upstash response:', {
+        clientId,
+        success,
+        remaining,
+        reset,
+        resetDate: new Date(reset * 1000).toISOString(),
+        now: new Date().toISOString(),
+      });
+
       return {
         allowed: success,
         remaining,
@@ -181,7 +191,18 @@ export default async function proxy(request: NextRequest) {
   const clientId = getClientId(request);
   const { allowed, remaining, resetTime } = await checkRateLimit(clientId);
 
-  // Log rate limit events (only in production for monitoring)
+  // Log all rate limit events for debugging
+  console.log('[Rate Limit] Request processed', {
+    clientId,
+    allowed,
+    remaining,
+    resetTime,
+    resetDate: new Date(resetTime * 1000).toISOString(),
+    path: request.nextUrl.pathname,
+    timestamp: new Date().toISOString(),
+  });
+
+  // Log blocked requests with warning
   if (!allowed) {
     console.warn('[Rate Limit] Blocked request', {
       clientId,
