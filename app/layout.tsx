@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import localFont from 'next/font/local';
 
 import './globals.css';
@@ -8,8 +10,6 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { cn } from '@/lib/utils';
 
 import type { Metadata } from 'next';
-
-import { Analytics } from '@vercel/analytics/next';
 
 const pretendard = localFont({
   src: './fonts/PretendardVariable.woff2',
@@ -53,6 +53,7 @@ export default function RootLayout({
           <Floating />
           <Footer />
           <Analytics />
+          <SpeedInsights/>
         </ThemeProvider>
       </body>
     </html>

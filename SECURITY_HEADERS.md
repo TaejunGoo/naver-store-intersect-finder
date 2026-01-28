@@ -81,11 +81,11 @@ camera=(), microphone=(), geolocation=()
 **Configuration**:
 ```csp
 default-src 'self';
-script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com;
+script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live;
 style-src 'self' 'unsafe-inline';
 img-src 'self' https://shopping-phinf.pstatic.net data: blob:;
 font-src 'self' data:;
-connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com;
+connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com https://vercel.live;
 frame-ancestors 'none';
 base-uri 'self';
 form-action 'self';
@@ -96,11 +96,11 @@ form-action 'self';
 | Directive | Meaning |
 |-----------|---------|
 | `default-src 'self'` | By default, only load resources from same domain |
-| `script-src` | JavaScript sources (Next.js needs `unsafe-eval`/`unsafe-inline`) |
+| `script-src` | JavaScript sources (Next.js needs `unsafe-eval`/`unsafe-inline`, Vercel Live) |
 | `style-src` | CSS sources (Tailwind needs `unsafe-inline`) |
 | `img-src` | Images from self + Naver Shopping CDN |
 | `font-src` | Fonts from self + data URIs |
-| `connect-src` | API calls to self + Vercel Analytics |
+| `connect-src` | API calls to self + Vercel Analytics + Vercel Live |
 | `frame-ancestors 'none'` | Cannot be embedded in iframes (same as X-Frame-Options) |
 | `base-uri 'self'` | Prevent `<base>` tag injection |
 | `form-action 'self'` | Forms can only submit to same domain |
@@ -241,6 +241,14 @@ Example:
 Make sure these domains are in `connect-src`:
 ```typescript
 "connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com"
+```
+
+### Vercel Live Feedback not working
+
+If you see errors about `vercel.live` being blocked, add it to both `script-src` and `connect-src`:
+```typescript
+"script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live"
+"connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com https://vercel.live"
 ```
 
 ### Styles not loading
