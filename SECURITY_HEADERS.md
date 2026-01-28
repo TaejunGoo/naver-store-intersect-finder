@@ -86,6 +86,7 @@ style-src 'self' 'unsafe-inline';
 img-src 'self' https://shopping-phinf.pstatic.net data: blob:;
 font-src 'self' data:;
 connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com https://vercel.live;
+frame-src https://vercel.live;
 frame-ancestors 'none';
 base-uri 'self';
 form-action 'self';
@@ -101,6 +102,7 @@ form-action 'self';
 | `img-src` | Images from self + Naver Shopping CDN |
 | `font-src` | Fonts from self + data URIs |
 | `connect-src` | API calls to self + Vercel Analytics + Vercel Live |
+| `frame-src` | Allow iframes from Vercel Live (feedback widget) |
 | `frame-ancestors 'none'` | Cannot be embedded in iframes (same as X-Frame-Options) |
 | `base-uri 'self'` | Prevent `<base>` tag injection |
 | `form-action 'self'` | Forms can only submit to same domain |
@@ -245,11 +247,14 @@ Make sure these domains are in `connect-src`:
 
 ### Vercel Live Feedback not working
 
-If you see errors about `vercel.live` being blocked, add it to both `script-src` and `connect-src`:
+If you see errors about `vercel.live` being blocked, add it to `script-src`, `connect-src`, and `frame-src`:
 ```typescript
 "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://vercel.live"
 "connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com https://vercel.live"
+"frame-src https://vercel.live"
 ```
+
+The `frame-src` directive is required because Vercel Live uses iframes for the feedback widget.
 
 ### Styles not loading
 

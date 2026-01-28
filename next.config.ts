@@ -48,6 +48,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' https://shopping-phinf.pstatic.net data: blob:",
               "font-src 'self' data:",
               "connect-src 'self' https://va.vercel-scripts.com https://*.vercel-analytics.com https://vercel.live",
+              "frame-src https://vercel.live",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
