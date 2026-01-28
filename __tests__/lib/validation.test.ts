@@ -117,8 +117,46 @@ describe('Keyword Validation', () => {
       });
     });
 
-    describe('Invalid Cases - Special Characters', () => {
-      it('should reject keywords with < >', () => {
+    describe('Valid Cases - Safe Special Characters', () => {
+      it('should accept keywords with & (and)', () => {
+        const result = validateKeywords(['진간장&간장', '된장']);
+        expect(result.valid).toBe(true);
+        expect(result.keywords).toEqual(['진간장&간장', '된장']);
+      });
+
+      it('should accept keywords with parentheses (capacity, quantity)', () => {
+        const result = validateKeywords(['진간장(500ml)', '간장']);
+        expect(result.valid).toBe(true);
+        expect(result.keywords).toEqual(['진간장(500ml)', '간장']);
+      });
+
+      it('should accept keywords with + (plus)', () => {
+        const result = validateKeywords(['비타민C+', '비타민D']);
+        expect(result.valid).toBe(true);
+        expect(result.keywords).toEqual(['비타민C+', '비타민D']);
+      });
+
+      it('should accept keywords with . (dot)', () => {
+        const result = validateKeywords(['0.5L 생수', '1L 생수']);
+        expect(result.valid).toBe(true);
+        expect(result.keywords).toEqual(['0.5L 생수', '1L 생수']);
+      });
+
+      it('should accept keywords with / (slash)', () => {
+        const result = validateKeywords(['1/2컵 계량컵', '1/4컵 계량컵']);
+        expect(result.valid).toBe(true);
+        expect(result.keywords).toEqual(['1/2컵 계량컵', '1/4컵 계량컵']);
+      });
+
+      it('should accept keywords with % (percent)', () => {
+        const result = validateKeywords(['100% 면', '50% 할인']);
+        expect(result.valid).toBe(true);
+        expect(result.keywords).toEqual(['100% 면', '50% 할인']);
+      });
+    });
+
+    describe('Invalid Cases - Dangerous Special Characters', () => {
+      it('should reject keywords with < > (XSS risk)', () => {
         const result = validateKeywords(['<script>', '간장']);
         expect(result.valid).toBe(false);
         expect(result.error).toContain('특수문자');
@@ -130,20 +168,26 @@ describe('Keyword Validation', () => {
         expect(result.error).toContain('특수문자');
       });
 
-      it('should reject keywords with &', () => {
-        const result = validateKeywords(['진간장&간장', '된장']);
-        expect(result.valid).toBe(false);
-        expect(result.error).toContain('특수문자');
-      });
-
-      it('should reject keywords with quotes', () => {
+      it('should reject keywords with quotes (SQL/XSS risk)', () => {
         const result = validateKeywords(['"진간장"', '간장']);
         expect(result.valid).toBe(false);
         expect(result.error).toContain('특수문자');
       });
 
-      it('should reject keywords with parentheses', () => {
-        const result = validateKeywords(['진간장(500ml)', '간장']);
+      it('should reject keywords with = (SQL injection risk)', () => {
+        const result = validateKeywords(['id=1', '간장']);
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain('특수문자');
+      });
+
+      it('should reject keywords with $ (variable injection risk)', () => {
+        const result = validateKeywords(['$var', '간장']);
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain('특수문자');
+      });
+
+      it('should reject keywords with {} (code injection risk)', () => {
+        const result = validateKeywords(['{test}', '간장']);
         expect(result.valid).toBe(false);
         expect(result.error).toContain('특수문자');
       });
@@ -183,6 +227,15 @@ describe('Keyword Validation', () => {
       expect(validateSingleKeyword('진간장-골드')).toBeNull();
     });
 
+    it('should return null for valid keyword with safe special characters', () => {
+      expect(validateSingleKeyword('진간장&간장')).toBeNull();
+      expect(validateSingleKeyword('진간장(500ml)')).toBeNull();
+      expect(validateSingleKeyword('비타민C+')).toBeNull();
+      expect(validateSingleKeyword('0.5L')).toBeNull();
+      expect(validateSingleKeyword('1/2컵')).toBeNull();
+      expect(validateSingleKeyword('100%')).toBeNull();
+    });
+
     it('should return null for empty keyword (partial input)', () => {
       expect(validateSingleKeyword('')).toBeNull();
       expect(validateSingleKeyword('   ')).toBeNull();
@@ -194,10 +247,11 @@ describe('Keyword Validation', () => {
       expect(error).toContain('100자 이내');
     });
 
-    it('should return error for invalid characters', () => {
+    it('should return error for dangerous characters', () => {
       expect(validateSingleKeyword('<script>')).toContain('한글, 영문, 숫자');
-      expect(validateSingleKeyword('진간장&간장')).toContain('한글, 영문, 숫자');
       expect(validateSingleKeyword('"진간장"')).toContain('한글, 영문, 숫자');
+      expect(validateSingleKeyword('$var')).toContain('한글, 영문, 숫자');
+      expect(validateSingleKeyword('{test}')).toContain('한글, 영문, 숫자');
     });
 
     it('should normalize spaces before validation', () => {

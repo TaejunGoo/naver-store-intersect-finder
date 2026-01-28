@@ -63,7 +63,7 @@ export function RateLimitIndicator({ rateLimitInfo }: RateLimitIndicatorProps) {
   // Show error when no requests remaining (and timer not expired)
   if (remaining === 0 && !isExpired) {
     return (
-      <Alert variant='destructive' className='mb-4'>
+      <Alert variant='destructive' className='mt-3 mb-4'>
         <AlertCircle className='h-4 w-4' />
         <AlertDescription>
           <div className='flex items-center justify-between gap-4'>
@@ -81,7 +81,7 @@ export function RateLimitIndicator({ rateLimitInfo }: RateLimitIndicatorProps) {
   // Show warning when 3 or fewer requests remaining (and timer not expired)
   if (remaining <= 3 && !isExpired) {
     return (
-      <Alert className='mb-4 border-orange-500/50 bg-orange-50 dark:bg-orange-950/20'>
+      <Alert className='mt-3 mb-4 border-orange-500/50 bg-orange-50 dark:bg-orange-950/20'>
         <AlertCircle className='h-4 w-4 text-orange-600 dark:text-orange-500' />
         <AlertDescription className='text-orange-900 dark:text-orange-200'>
           <div className='flex items-center justify-between gap-4'>
@@ -100,7 +100,7 @@ export function RateLimitIndicator({ rateLimitInfo }: RateLimitIndicatorProps) {
 
   // Normal state - timer expired OR 4+ requests remaining
   return (
-    <div className='mb-4 text-xs text-muted-foreground text-center mt-3'>
+    <div className='mt-3 mb-4 text-xs text-muted-foreground text-center'>
       1분마다 {limit}회씩 검색 가능합니다
     </div>
   );

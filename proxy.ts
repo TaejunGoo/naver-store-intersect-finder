@@ -152,20 +152,24 @@ async function checkRateLimit(clientId: string): Promise<{
     try {
       const { success, remaining, reset } = await ratelimit.limit(clientId);
 
+      // Upstash returns reset in milliseconds, convert to seconds
+      const resetTimeInSeconds = Math.floor(reset / 1000);
+
       // Debug logging to understand Upstash behavior
       console.log('[Rate Limiter] Upstash response:', {
         clientId,
         success,
         remaining,
         reset,
-        resetDate: new Date(reset * 1000).toISOString(),
+        resetInSeconds: resetTimeInSeconds,
+        resetDate: new Date(reset).toISOString(),
         now: new Date().toISOString(),
       });
 
       return {
         allowed: success,
         remaining,
-        resetTime: reset,
+        resetTime: resetTimeInSeconds,
       };
     } catch (error) {
       console.error('[Rate Limiter] Upstash error, falling back to in-memory:', error);
@@ -218,7 +222,7 @@ export default async function proxy(request: NextRequest) {
     : NextResponse.json(
       {
         success: false,
-        error: 'Too many requests. Please try again later.',
+        error: '검색 횟수 제한을 초과했습니다. 잠시 후 다시 시도해주세요.',
       },
       { status: 429 },
     );

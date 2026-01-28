@@ -7,7 +7,10 @@ export const VALIDATION_RULES = {
   MIN_KEYWORDS: 2,
   MAX_KEYWORDS: 5,
   MAX_KEYWORD_LENGTH: 100,
-  KEYWORD_PATTERN: /^[a-zA-Z0-9가-힣\s\-]+$/,
+  // Allow common product name characters: letters, numbers, Korean, spaces, and safe special chars
+  // Safe: - (hyphen), & (and), + (plus), () (parentheses), . (dot), / (slash), % (percent)
+  // Blocked: <, >, ', ", ;, =, $, {, } (XSS/SQL Injection risks)
+  KEYWORD_PATTERN: /^[a-zA-Z0-9가-힣\s\-&+()./%]+$/,
 } as const;
 
 export interface ValidationResult {
@@ -73,11 +76,11 @@ export function validateKeywords(keywords: string[]): ValidationResult {
       };
     }
 
-    // Check pattern (한글, 영문, 숫자, 공백, 하이픈만 허용)
+    // Check pattern (한글, 영문, 숫자, 공백 및 일부 특수문자 허용)
     if (!VALIDATION_RULES.KEYWORD_PATTERN.test(keyword)) {
       return {
         valid: false,
-        error: `키워드에 특수문자를 사용할 수 없습니다 ("${keyword.substring(0, 20)}...")`,
+        error: `사용 불가능한 특수문자가 포함되어 있습니다 ("${keyword.substring(0, 20)}...")`,
       };
     }
   }
@@ -121,7 +124,7 @@ export function validateSingleKeyword(keyword: string): string | null {
   }
 
   if (!VALIDATION_RULES.KEYWORD_PATTERN.test(normalized)) {
-    return '한글, 영문, 숫자, 공백, -만 사용 가능합니다';
+    return '한글, 영문, 숫자, 공백, -&+()./%만 사용 가능합니다';
   }
 
   return null;

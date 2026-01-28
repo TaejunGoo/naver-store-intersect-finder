@@ -9,7 +9,11 @@
       "Bash(npm run lint:*)",
       "Bash(timeout:*)",
       "Bash(npm run build:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(if [ -f .env.local ])",
+      "Bash(then grep \"UPSTASH\" .env.local)",
+      "Bash(else echo \".env.local not found\")",
+      "Bash(fi)"
     ]
   }
 }
