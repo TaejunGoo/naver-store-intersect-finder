@@ -65,6 +65,7 @@ export interface SearchResponse {
     searchStats?: SearchStats
   }
   error?: string
+  errorCode?: string
 }
 
 // API Error Types

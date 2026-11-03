@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { findIntersection, getAllStores } from '@/lib/intersection';
 import { searchKeywordsMultiSort } from '@/lib/naver-api';
+import { SEARCH_AVAILABILITY } from '@/lib/search-availability';
 import { validateKeywords } from '@/lib/validation';
 import { SearchRequest, SearchResponse } from '@/types';
 
@@ -18,6 +19,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<SearchRes
       return NextResponse.json(
         { success: false, error: validationResult.error || 'Invalid keywords' },
         { status: 400 },
+      );
+    }
+
+    // Reject retired searches before checking credentials or calling the provider.
+    if (!SEARCH_AVAILABILITY.available) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: SEARCH_AVAILABILITY.message,
+          errorCode: SEARCH_AVAILABILITY.code,
+        },
+        { status: 503 },
       );
     }
 

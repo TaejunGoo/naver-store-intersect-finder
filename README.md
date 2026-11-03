@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **현재 검색 기능을 이용할 수 없습니다.** 네이버 쇼핑 검색 API는 2026년 7월 31일 종료되었으며, NAVER API HUB 이관 대상에서도 제외되었습니다. 자세한 내용은 [공식 종료 공지](https://developers.naver.com/notice/article/32564)와 [이관 공지](https://developers.naver.com/notice/article/32530)를 확인해 주세요.
+>
+> 검색 기능은 비활성화되어 있으며, `/api/search`는 유효한 검색 요청에 HTTP 503을 반환합니다. 검색 기능을 복구하려면 새로운 상품 데이터 소스를 연동해야 하며, API 키나 호출 주소만 변경해서는 복구할 수 없습니다. 아래의 검색 기능 및 설정 안내는 기존 API 연동을 기준으로 작성되었습니다.
+
 # Naver Smart Store Intersection Finder
 
 여러 검색어를 입력하면 해당 상품들을 **모두 판매하는** 네이버 스마트스토어를 찾아주는 웹 애플리케이션입니다.

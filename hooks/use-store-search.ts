@@ -77,7 +77,8 @@ export function useStoreSearch() {
       if (err && typeof err === 'object' && 'rateLimit' in err) {
         setRateLimitInfo((err as { rateLimit: RateLimitInfo | null }).rateLimit);
       }
-      throw err;
+      // SWR exposes the error to the UI; event handlers must not reject as well.
+      return undefined;
     }
   };
 

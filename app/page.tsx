@@ -5,7 +5,9 @@ import { useState } from 'react';
 import { RateLimitIndicator } from '@/components/rate-limit-indicator';
 import { SearchForm } from '@/components/search-form';
 import { SearchResults } from '@/components/search-results';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useStoreSearch } from '@/hooks/use-store-search';
+import { SEARCH_AVAILABILITY } from '@/lib/search-availability';
 
 export default function Home() {
   const { search, data, error, isLoading, rateLimitInfo } = useStoreSearch();
@@ -35,20 +37,33 @@ export default function Home() {
         </header>
 
         <section className='mb-12 max-w-3xl mx-auto'>
-          <SearchForm onSearch={handleSearch} isLoading={isLoading} />
+          {!SEARCH_AVAILABILITY.available && (
+            <Alert className='mb-4'>
+              <AlertTitle>검색 서비스 이용 불가</AlertTitle>
+              <AlertDescription>
+                <p>{SEARCH_AVAILABILITY.message}</p>
+                <a href={SEARCH_AVAILABILITY.noticeUrl} target='_blank' rel='noopener noreferrer' className='underline'>
+                  네이버 공식 종료 공지 확인
+                </a>
+              </AlertDescription>
+            </Alert>
+          )}
+          <SearchForm onSearch={handleSearch} isLoading={isLoading} disabled={!SEARCH_AVAILABILITY.available} />
           <RateLimitIndicator rateLimitInfo={rateLimitInfo} />
         </section>
 
-        <section className='animate-in fade-in duration-500'>
-          <SearchResults
-            stores={data?.success ? data.data?.intersectionStores ?? null : null}
-            isLoading={isLoading}
-            error={error || (data?.success === false ? data.error ?? null : null)}
-            keywordCount={data?.data?.keywordCount ?? lastKeywords.length}
-            totalStoresFound={data?.data?.totalStoresFound ?? 0}
-            onRetry={handleRetry}
-          />
-        </section>
+        {SEARCH_AVAILABILITY.available && (
+          <section className='animate-in fade-in duration-500'>
+            <SearchResults
+              stores={data?.success ? data.data?.intersectionStores ?? null : null}
+              isLoading={isLoading}
+              error={error || (data?.success === false ? data.error ?? null : null)}
+              keywordCount={data?.data?.keywordCount ?? lastKeywords.length}
+              totalStoresFound={data?.data?.totalStoresFound ?? 0}
+              onRetry={handleRetry}
+            />
+          </section>
+        )}
       </main>
     </div>
   );

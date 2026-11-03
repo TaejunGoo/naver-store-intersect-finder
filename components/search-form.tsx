@@ -11,9 +11,10 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '
 interface SearchFormProps {
   onSearch: (keywords: string[]) => void
   isLoading: boolean
+  disabled?: boolean
 }
 
-export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
+export function SearchForm({ onSearch, isLoading, disabled = false }: SearchFormProps) {
   const [input, setInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +27,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    if (disabled || isLoading) return;
 
     const keywords = parseKeywords(input);
 
@@ -98,7 +100,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
               if (error) setError(null);
             }}
             onKeyDown={handleKeyDown}
-            disabled={isLoading}
+            disabled={disabled || isLoading}
             
           />
           {input && (
@@ -107,7 +109,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
                 type='button'
                 onClick={handleClear}
                 className='text-muted-foreground hover:text-foreground cursor-pointer'
-                disabled={isLoading}
+                disabled={disabled || isLoading}
               >
                 <X className='h-4 w-4' />
               </InputGroupButton>
@@ -117,7 +119,7 @@ export function SearchForm({ onSearch, isLoading }: SearchFormProps) {
             <InputGroupButton 
               variant='ghost'
               type='submit'
-              disabled={isLoading}
+              disabled={disabled || isLoading}
               className='cursor-pointer'
             >
               
